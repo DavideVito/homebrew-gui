@@ -1,10 +1,13 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import { SelectedBrewsContext } from '../Contexts/selectedBrew.context';
+import { InstallingContext } from '../Contexts/installProgress.context';
+
+import { InstalledContext } from '../Contexts/installed.context';
 
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
@@ -22,10 +25,16 @@ const useStyles = makeStyles({
 
 const BrewCard = (props: any) => {
   let [selectedBrews, setSelectedBrews] = useContext(SelectedBrewsContext);
+  let [installingBrews, setIsInstalling] = useContext(InstallingContext);
+  let [installedBrews, _] = useContext(InstalledContext);
 
   let [comando, setComando] = useState(null);
 
   const classes = useStyles();
+
+  useEffect(() => {
+    console.log(installedBrews);
+  }, [installedBrews]);
 
   const push = (brew) => {
     setSelectedBrews([...selectedBrews, brew]);
@@ -36,6 +45,10 @@ const BrewCard = (props: any) => {
 
     setSelectedBrews([...a]);
   };
+
+  useEffect(() => {
+    console.table(installingBrews);
+  }, [installingBrews]);
 
   return (
     <Card className={classes.root}>
@@ -50,7 +63,7 @@ const BrewCard = (props: any) => {
         </CardContent>
       </CardActionArea>
       <CardActions>
-        {comando ? (
+        {comando || installingBrews.includes(props.brew) ? (
           <>
             <CircularProgress color="primary" />
 
@@ -58,7 +71,19 @@ const BrewCard = (props: any) => {
               size="small"
               color="primary"
               onClick={() => {
-                comando.kill('SIGINT');
+                let brew = installingBrews.filter((brew) => {
+                  return brew.token === props.brew.token;
+                })[0];
+
+                brew.comando && brew.comando.kill('SIGINT');
+
+                let a = installingBrews.filter((b) => {
+                  return b.token !== brew.token;
+                });
+
+                console.log('Riga 78 ', a);
+                setIsInstalling([...a]);
+
                 setComando(null);
               }}
             >
@@ -67,17 +92,32 @@ const BrewCard = (props: any) => {
           </>
         ) : (
           <>
-            <Button
-              size="small"
-              color="primary"
-              onClick={() => {
-                let comando = install(props.brew.token);
+            {installedBrews.includes(props.brew.token) ? (
+              <>
+                <Button size="small" color="primary" onClick={() => {}}>
+                  Remove
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="small"
+                color="primary"
+                onClick={() => {
+                  let comando = install(props.brew.token);
 
-                setComando(comando);
-              }}
-            >
-              Install
-            </Button>
+                  let myBrew = {
+                    token: props.brew.token,
+                    brew: props.brew,
+                    comando,
+                  };
+
+                  setIsInstalling([...installingBrews, myBrew]);
+                  setComando(comando);
+                }}
+              >
+                Install
+              </Button>
+            )}
           </>
         )}
 

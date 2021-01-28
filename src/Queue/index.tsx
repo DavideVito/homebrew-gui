@@ -3,45 +3,71 @@ import React, { useState } from 'react';
 import { useContext } from 'react';
 
 import { SelectedBrewsContext } from '../Contexts/selectedBrew.context';
-
+import { InstallingContext } from '../Contexts/installProgress.context';
 import BrewCard from '../Brews/Brew';
 
-import { Grid } from '@material-ui/core';
+import BarraLaterale from '../Util/Appbar';
+
+import { Grid, Button } from '@material-ui/core';
+
+import { install } from '../Util/Commands';
 
 import { Link } from 'react-router-dom';
 
 const Queue = () => {
-  let [selectedBrews, setSelectedBrews] = useContext(SelectedBrewsContext);
+  let [selectedBrews] = useContext(SelectedBrewsContext);
+
+  let [installingBrew, setIsInstalling] = useContext(InstallingContext);
+
+  const installAll = () => {
+    let br = selectedBrews.reduce((acc, cur) => {
+      if (acc.token) return acc.token + ' ' + cur.token + ' ';
+      return acc + cur.token + ' ';
+    });
+    let comando = install(br);
+
+    setIsInstalling(null !== null);
+  };
 
   React.useEffect(() => {
     console.log('queue');
   }, []);
 
-  if (selectedBrews.length !== 0) {
-    return (
-      <div style={{ flexGrow: 1 }}>
-        <Grid container spacing={3}>
-          {selectedBrews.map((brew) => {
-            return (
-              <React.Fragment key={brew.token}>
-                <Grid item xs>
-                  <BrewCard name={brew.name[0]} desc={brew.desc} brew={brew} />
-                </Grid>
-                <div style={{ marginLeft: '10px' }}></div>
-              </React.Fragment>
-            );
-          })}
-        </Grid>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ flexGrow: 1 }}>
-      <Grid container spacing={3}>
-        You didn't select any brew to install, pls go back to{' '}
-        <Link to="/">Home</Link> and add some fresh packages
-      </Grid>
+    <div>
+      <BarraLaterale />
+
+      {selectedBrews.length !== 0 ? (
+        <div style={{ flexGrow: 1 }}>
+          <Grid container spacing={3}>
+            {selectedBrews.map((brew) => {
+              return (
+                <React.Fragment key={brew.token}>
+                  <Grid item xs>
+                    <BrewCard
+                      name={brew.name[0]}
+                      desc={brew.desc}
+                      brew={brew}
+                    />
+                  </Grid>
+                  <div style={{ marginLeft: '10px' }}></div>
+                </React.Fragment>
+              );
+            })}
+          </Grid>
+
+          <Button variant="contained" color="primary" onClick={installAll}>
+            Install all
+          </Button>
+        </div>
+      ) : (
+        <div style={{ flexGrow: 1 }}>
+          <Grid container spacing={3}>
+            You didn't select any brew to install, pls go back to the home and
+            add something to the list
+          </Grid>
+        </div>
+      )}
     </div>
   );
 };

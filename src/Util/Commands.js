@@ -1,4 +1,6 @@
-const {exec} = require("child_process")
+const {exec, execSync} = require("child_process")
+
+
 
 
 const ERRORS = {
@@ -7,8 +9,31 @@ const ERRORS = {
 
 }
 
+export const installati = () => {
+
+  const comando = "brew list --cask"
+
+  let ris = execSync(comando).toString()
+
+  return ris.split("\n");
+
+
+
+
+
+
+
+
+
+}
+
 export const install = (nome) =>
 {
+
+
+
+
+
   let comando = exec("brew install " + nome);
 
   comando.stdout.on( 'data', data => {

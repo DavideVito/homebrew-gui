@@ -6,7 +6,7 @@ import React, {
 export const InstallingContext = createContext();
 
 export const InstallingProvider = props => {
-  let [installing, setInstalling] = useState(false);
+  let [installing, setInstalling] = useState([]);
 
   return ( <
     InstallingContext.Provider value = {

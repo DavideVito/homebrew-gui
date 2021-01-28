@@ -1,16 +1,16 @@
 import React, { useContext } from 'react';
-import {
-  HashRouter as Router,
-  Switch,
-  Route,
-  Redirect,
-} from 'react-router-dom';
+import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './App.global.css';
 import { BrewsProvider } from './Contexts/app.context';
 import { BrewsContext } from './Contexts/app.context';
-
+import { InstallingProvider } from './Contexts/installProgress.context';
+import { InstalledProvider } from './Contexts/installed.context';
+import { InstalledContext } from './Contexts/installed.context';
+import { SearchedProvider } from './Contexts/searchedText.context';
 import { SelectedBrewsProvider } from './Contexts/selectedBrew.context';
+
+import { installati as checkInstallati } from './Util/Commands';
 
 import Brews from './Brews';
 
@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Home = () => {
   const [brews, setBrews] = useContext(BrewsContext);
+  const [installed, setInstalled] = useContext(InstalledContext);
 
   const classes = useStyles();
   const theme = useTheme();
@@ -39,6 +40,12 @@ const Home = () => {
 
     setBrews(data);
   };
+
+  useEffect(() => {
+    let installati = checkInstallati();
+
+    setInstalled(installati);
+  }, []);
 
   useEffect(() => {
     fetchJson();
@@ -68,12 +75,18 @@ export default function App() {
   return (
     <BrewsProvider>
       <SelectedBrewsProvider>
-        <Router>
-          <Switch>
-            <Route path="/" exact component={Home} />
-            <Route path="/Queue" exact component={Queue} />
-          </Switch>
-        </Router>
+        <InstallingProvider>
+          <InstalledProvider>
+            <SearchedProvider>
+              <Router>
+                <Switch>
+                  <Route path="/" exact component={Home} />
+                  <Route path="/Queue" exact component={Queue} />
+                </Switch>
+              </Router>
+            </SearchedProvider>
+          </InstalledProvider>
+        </InstallingProvider>
       </SelectedBrewsProvider>
     </BrewsProvider>
   );
