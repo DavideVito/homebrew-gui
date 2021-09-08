@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -17,11 +17,11 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme, fade } from '@material-ui/core/styles';
-import { SelectedBrewsContext } from '../Contexts/selectedBrew.context';
-import { useContext } from 'react';
+
 import { Link } from 'react-router-dom';
-import { InstallingContext } from '../Contexts/installProgress.context';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { SelectedBrewsContext } from '../Contexts/selectedBrew.context';
+import { InstallingContext } from '../Contexts/installProgress.context';
 import { SearchedContext } from '../Contexts/searchedText.context';
 
 const drawerWidth = 120;
@@ -100,9 +100,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function BarraLaterale(props) {
-  let [isInsatlling] = useContext(InstallingContext);
-  let [selectedBrews] = useContext(SelectedBrewsContext);
-  let [searchedText, setSearchedText] = useContext(SearchedContext);
+  const [isInsatlling] = useContext(InstallingContext);
+  const [selectedBrews] = useContext(SelectedBrewsContext);
+  const [searchedText, setSearchedText] = useContext(SearchedContext);
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
@@ -112,18 +112,18 @@ function BarraLaterale(props) {
       <div className={classes.toolbar} />
       <Divider />
       <List>
-        <ListItem button key={'All Apps'}>
+        <ListItem button key="All Apps">
           <Link to="/">
-            <ListItemText primary={'All Apps'} />
+            <ListItemText primary="All Apps" />
           </Link>
         </ListItem>
-        <ListItem button key={'Queue'}>
-          <Link to="/Queue">
-            <ListItemText primary={`Queue ${selectedBrews.length}`} />
+        <ListItem button key="Installed">
+          <Link to="/Installed">
+            <ListItemText primary="Installed" />
           </Link>
         </ListItem>
-        <ListItem button key={'Doctor'}>
-          <ListItemText primary={'Run Doctor'} />
+        <ListItem button key="Doctor">
+          <ListItemText primary="Run Doctor" />
         </ListItem>
       </List>
     </div>
@@ -145,7 +145,7 @@ function BarraLaterale(props) {
             style={{ justifyContent: 'right', marginLeft: '100px' }}
             value={searchedText}
             onKeyPress={(event) => {
-              //debugger;
+              // debugger;
               setSearchedText(searchedText + event.key);
             }}
           />
@@ -163,7 +163,7 @@ function BarraLaterale(props) {
       <Drawer
         container={container}
         variant="permanent"
-        open={true}
+        open
         classes={{
           paper: classes.drawerPaper,
         }}

@@ -1,37 +1,29 @@
-import React, { useState } from 'react';
-
-import { useContext } from 'react';
-
-import { SelectedBrewsContext } from '../Contexts/selectedBrew.context';
-import { InstallingContext } from '../Contexts/installProgress.context';
-import BrewCard from '../Brews/Brew';
-
-import BarraLaterale from '../Util/Appbar';
+import React, { useContext } from 'react';
 
 import { Grid, Button } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import { SelectedBrewsContext } from '../Contexts/selectedBrew.context';
+import { InstallingContext } from '../Contexts/installProgress.context';
+import BrewCard from '../Brews/BrewCard';
+
+import BarraLaterale from '../Util/BarraLaterale';
 
 import { install } from '../Util/Commands';
 
-import { Link } from 'react-router-dom';
-
 const Queue = () => {
-  let [selectedBrews] = useContext(SelectedBrewsContext);
+  const [selectedBrews] = useContext(SelectedBrewsContext);
 
-  let [installingBrew, setIsInstalling] = useContext(InstallingContext);
+  const [installingBrew, setIsInstalling] = useContext(InstallingContext);
 
   const installAll = () => {
-    let br = selectedBrews.reduce((acc, cur) => {
-      if (acc.token) return acc.token + ' ' + cur.token + ' ';
-      return acc + cur.token + ' ';
+    const br = selectedBrews.reduce((acc, cur) => {
+      if (acc.token) return `${acc.token} ${cur.token} `;
+      return `${acc + cur.token} `;
     });
-    let comando = install(br);
+    const comando = install(br);
 
     setIsInstalling(null !== null);
   };
-
-  React.useEffect(() => {
-    console.log('queue');
-  }, []);
 
   return (
     <div>
@@ -50,7 +42,7 @@ const Queue = () => {
                       brew={brew}
                     />
                   </Grid>
-                  <div style={{ marginLeft: '10px' }}></div>
+                  <div style={{ marginLeft: '10px' }} />
                 </React.Fragment>
               );
             })}

@@ -1,23 +1,34 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import './App.global.css';
-import { BrewsProvider } from './Contexts/app.context';
-import { BrewsContext } from './Contexts/app.context';
-import { InstallingProvider } from './Contexts/installProgress.context';
-import { InstalledProvider } from './Contexts/installed.context';
-import { InstalledContext } from './Contexts/installed.context';
-import { SearchedProvider } from './Contexts/searchedText.context';
-import { SelectedBrewsProvider } from './Contexts/selectedBrew.context';
+import { Button, Typography } from '@material-ui/core';
 
-import { installati as checkInstallati } from './Util/Commands';
+import './App.global.css';
+
+import { makeStyles } from '@material-ui/core/styles';
+import { LineType } from 'react-terminal-ui';
+import { BrewsProvider, BrewsContext } from './Contexts/brews.context';
+
+import { InstallingProvider } from './Contexts/installProgress.context';
+import {
+  InstalledProvider,
+  InstalledContext,
+} from './Contexts/installed.context';
+
+import { SearchedProvider } from './Contexts/searchedText.context';
+import {
+  SelectedBrewsContext,
+  SelectedBrewsProvider,
+} from './Contexts/selectedBrew.context';
+
+import { installati as checkInstallati, run } from './Util/Commands';
 
 import Brews from './Brews';
 
-import BarraLaterale from './Util/Appbar';
+import BarraLaterale from './Util/BarraLaterale';
 import Queue from './Queue';
 
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { CommandsProvider } from './Contexts/command.context';
+import Installed from './Instelled';
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -27,32 +38,26 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Home = () => {
-  const [brews, setBrews] = useContext(BrewsContext);
-  const [installed, setInstalled] = useContext(InstalledContext);
+const Home = ({ brews }) => {
+  const setInstalled = useContext(InstalledContext)[1];
+
+  const [selectedBrews] = useContext(SelectedBrewsContext);
+
+  const [comando, setComando] = useState('');
+
+  useEffect(() => {
+    const s = `brew install --cask ${selectedBrews.reduce((acc, val) => {
+      return `${acc + val.token} `;
+    }, '')}`;
+
+    setComando(s);
+  }, [selectedBrews]);
 
   const classes = useStyles();
-  const theme = useTheme();
-
-  const fetchJson = async () => {
-    let ris = await fetch('https://formulae.brew.sh/api/cask.json');
-    let data = await ris.json();
-
-    setBrews(data);
-  };
 
   useEffect(() => {
-    let installati = checkInstallati();
-
+    const installati = checkInstallati();
     setInstalled(installati);
-  }, []);
-
-  useEffect(() => {
-    fetchJson();
-
-    return () => {
-      setBrews([]);
-    };
   }, []);
 
   return (
@@ -64,23 +69,45 @@ const Home = () => {
       <div style={{ marginLeft: '150px', overflow: 'auto' }}>
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          <Brews />
+          <Brews brews={brews} />
+          <div style={{ width: '100%', maxHeight: '150px', marginTop: '15px' }}>
+            {comando.length > 21 ? (
+              <>
+                <Typography variant="h6" component="pre">
+                  {comando}
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    run(comando);
+                  }}
+                >
+                  run
+                </Button>
+              </>
+            ) : (
+              <></>
+            )}
+          </div>
         </main>
       </div>
     </>
   );
 };
 
-export default function App() {
+export default function App({ brews }) {
   return (
-    <BrewsProvider>
+    <CommandsProvider>
       <SelectedBrewsProvider>
         <InstallingProvider>
           <InstalledProvider>
             <SearchedProvider>
               <Router>
                 <Switch>
-                  <Route path="/" exact component={Home} />
+                  <Route path="/" exact>
+                    <Home brews={brews} />
+                  </Route>
+                  <Route path="/installed" exact component={Installed} />
                   <Route path="/Queue" exact component={Queue} />
                 </Switch>
               </Router>
@@ -88,7 +115,7 @@ export default function App() {
           </InstalledProvider>
         </InstallingProvider>
       </SelectedBrewsProvider>
-    </BrewsProvider>
+    </CommandsProvider>
   );
 }
-//<Route path="/Queue" exact component={Queue} />
+// <Route path="/Queue" exact component={Queue} />

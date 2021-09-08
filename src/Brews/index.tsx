@@ -1,54 +1,51 @@
-import React, { useEffect, useState } from 'react';
-
-import { useContext } from 'react';
-
-import { BrewsContext } from '../Contexts/app.context';
-
-import BrewCard from './Brew';
-
-import { SearchedContext } from '../Contexts/searchedText.context';
+import React, { useState, useContext } from 'react';
 
 import { Grid, Button } from '@material-ui/core';
 
-const Brews = () => {
-  let [brews] = useContext(BrewsContext);
+import PropTypes from 'prop-types';
+import BrewCard from './BrewCard';
 
-  let [text] = useContext(SearchedContext);
+import { SearchedContext } from '../Contexts/searchedText.context';
+import { Brew } from './Brew';
 
-  useEffect(() => {
-    console.log(brews);
-  }, [brews]);
+const Brews = (props): JSX.Element => {
+  const [brews] = useState(props.brews);
 
-  let [currentIndex, setCurrentIndex] = useState(0);
+  const [text] = useContext(SearchedContext);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (brews == null) {
+    return <div>Loading..</div>;
+  }
 
   return (
     <div style={{ flexGrow: 1 }}>
       <Grid container spacing={3}>
-        {brews.splice &&
-          brews
-            .filter((brew) => {
-              let a = brew.token.startsWith(text);
-              let b = brew.name[0].startsWith(text);
-              console.table({ token: brew.token, nome: brew.name[0], a, b });
+        {Object.keys(brews)
+          .filter((brewString) => {
+            const brew = brews[brewString];
 
-              return a || b;
-            })
-            .splice(currentIndex, 5)
-
-            .map((brew) => {
-              return (
-                <React.Fragment key={brew.token}>
-                  <Grid item xs>
-                    <BrewCard
-                      name={brew.name[0]}
-                      desc={brew.desc}
-                      brew={brew}
-                    />
-                  </Grid>
-                  <div style={{ marginLeft: '10px' }}></div>
-                </React.Fragment>
-              );
-            })}
+            const a = brew.token.startsWith(text);
+            const b = brew.name[0].startsWith(text);
+            return a || b;
+          })
+          .splice(currentIndex, 10)
+          .map((brewString) => {
+            const brew = brews[brewString];
+            return (
+              <React.Fragment key={brew.token}>
+                <Grid item xs>
+                  <BrewCard
+                    name={brew.name}
+                    desc={brew.description}
+                    brew={brew}
+                  />
+                </Grid>
+                <div style={{ marginLeft: '10px' }} />
+              </React.Fragment>
+            );
+          })}
       </Grid>
       <div style={{ marginTop: '20px' }}>
         <Button
